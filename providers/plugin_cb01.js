@@ -35,6 +35,24 @@ function sortPrefix(qualityKey, syncLevel) {
   return ZW_PREFIX[r] + ZW_PREFIX[s];
 }
 
+var EASYPROXY_BASE = "http://192.168.1.25:7860";
+
+function easyProxyUrl(url) {
+  if (typeof url !== "string" || !/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  var base = EASYPROXY_BASE.replace(/\/+$/, "");
+
+  if (url.indexOf(base + "/proxy/") === 0) {
+    return url;
+  }
+
+  return base +
+    "/proxy/manifest.m3u8?url=" +
+    encodeURIComponent(url);
+}
+
 function _cbTmdbMeta(id, type) {
   return new Promise(function(resolve) {
     var cleanId = String(id || '').replace(/^tmdb:/, '');
@@ -417,7 +435,8 @@ function extractMixDrop(mdId, quality, cb, linkHost) {
       var isHD = (quality === '1080p' || /hd/i.test(String(quality || '')));
       var streamLabel = isHD ? "MixDrop HD" : "MixDrop";
       cb({
-        url: streamUrl,
+        //url: streamUrl,
+        url: easyProxyUrl(streamUrl),//copilot added
         name: sortPrefix(isHD ? '1080' : (quality || '720')) + "📺 CB01 " + (isHD ? "1080p" : "720p") + " \uD83C\uDDEE\uD83C\uDDF9 \u00B7 " + streamLabel,
         title: streamLabel,
         quality: isHD ? '1080p' : (quality || '720p'),
