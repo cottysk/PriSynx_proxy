@@ -451,6 +451,24 @@ function findEpisodeHtml(base, seriesUrl, season, episode) {
   });
 }
 
+var EASYPROXY_BASE = 'http://192.168.1.25:7860';
+
+function easyProxyUrl(url) {
+  if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  var base = EASYPROXY_BASE.replace(/\/+$/, '');
+
+  if (url.indexOf(base + '/proxy/') === 0) {
+    return url;
+  }
+
+  return base +
+    '/proxy/manifest.m3u8?url=' +
+    encodeURIComponent(url);
+}
+
 function findStreams(tmdbId, mediaType, season, episode) {
   return run(function* () {
     try {
@@ -510,7 +528,8 @@ function findStreams(tmdbId, mediaType, season, episode) {
           name: sortPrefix(quality, ita ? 0 : 2) + '🎞️ Guardoserie ' + quality + ' ' + FLAG_IT + (ita ? '' : ' SUB'),
           title: heading + '\n' + details,
           size: details,
-          url: res.url,
+          //url: res.url,
+          url: easyProxyUrl(res.url), //copilot added
           quality: quality,
           provider: 'guardoserie',
           headers: res.headers,
