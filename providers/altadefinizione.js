@@ -41,6 +41,34 @@ function getJson(url, headers) {
 
 function log(msg) { try { console.log('[Altadefinizione] ' + msg); } catch (e) { } }
 
+// ---------- EasyProxy ----------
+
+// Address reachable from the device running Nuvio.
+var EASYPROXY_BASE = 'http://192.168.1.25:7860';
+
+/**
+ * Routes a final HTTP(S) video URL through EasyProxy.
+ *
+ * Non-network URLs are left untouched, and URLs already pointing
+ * to this EasyProxy instance are not wrapped again.
+ */
+function easyProxyUrl(url) {
+  if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  var base = EASYPROXY_BASE.replace(/\/+$/, '');
+
+  // Avoid wrapping an already proxied stream.
+  if (url.indexOf(base + '/proxy/') === 0) {
+    return url;
+  }
+
+  return base +
+    '/proxy/manifest.m3u8?url=' +
+    encodeURIComponent(url);
+}
+
 // ---------- formato stream (come PriSynx vixsrc.js) ----------
 
 var FLAG_IT = '\uD83C\uDDEE\uD83C\uDDF9';
@@ -192,7 +220,8 @@ function findStreams(tmdbId, mediaType, season, episode) {
           name: sortPrefix(quality, n) + '🏰 Altadefinizione ' + quality + ' ' + FLAG_IT + (n ? ' \u00B7 alt' : ''),
           title: heading + '\n' + details,
           size: details,
-          url: src.url,
+          //url: src.url,
+          url: easyProxyUrl(src.url),//copilot added this
           quality: quality,
           provider: 'altadefinizione',
           behaviorHints: {
